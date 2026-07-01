@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ClimaVision — Dashboard de Clima</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-icon">🌤</span>
+    Clima<span>Vision</span>
+  </div>
+  <div class="search-wrap">
+    <input
+      class="search-input"
+      id="city-input"
+      type="text"
+      placeholder="Digite uma cidade..."
+      autocomplete="off"
+    />
+    <button class="search-btn" id="search-btn">Buscar</button>
+  </div>
+</header>
+
+<main>
+  <!-- PLACEHOLDER INICIAL -->
+  <div id="placeholder">
+    <div class="placeholder-icon">🌍</div>
+    <div class="placeholder-title">Descubra o clima de qualquer cidade</div>
+    <p class="placeholder-sub">Digite o nome de uma cidade na barra acima para ver clima atual, previsão de 7 dias, qualidade do ar e muito mais.</p>
+    <div class="quick-cities">
+      <button class="quick-city-btn" onclick="searchCity('São Paulo')">São Paulo</button>
+      <button class="quick-city-btn" onclick="searchCity('Rio de Janeiro')">Rio de Janeiro</button>
+      <button class="quick-city-btn" onclick="searchCity('Brasília')">Brasília</button>
+      <button class="quick-city-btn" onclick="searchCity('Recife')">Recife</button>
+      <button class="quick-city-btn" onclick="searchCity('Lisboa')">Lisboa</button>
+      <button class="quick-city-btn" onclick="searchCity('Londres')">Londres</button>
+    </div>
+  </div>
+
+  <!-- LOADING / ERRO -->
+  <div id="state-msg">
+    <div class="spinner" id="spinner"></div>
+    <p id="state-text">Buscando dados...</p>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard">
+
+    <!-- HERO -->
+    <div class="hero-card">
+      <div>
+        <div class="city-name" id="d-city">—</div>
+        <div class="city-meta" id="d-meta">—</div>
+        <div class="temp-main" id="d-temp">—</div>
+        <div class="temp-feel" id="d-feel">—</div>
+        <div class="weather-desc" id="d-desc">—</div>
+        <div id="d-comfort" class="comfort-badge good">—</div>
+      </div>
+      <div class="hero-right">
+        <div class="weather-emoji" id="d-emoji">—</div>
+      </div>
+    </div>
+
+    <!-- MÉTRICAS -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">💧 Umidade</div>
+        <div class="metric-value" id="d-hum">—<span class="metric-unit">%</span></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">🌬 Vento</div>
+        <div class="metric-value" id="d-wind">—<span class="metric-unit"> km/h</span></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">👁 Visibilidade</div>
+        <div class="metric-value" id="d-vis">—<span class="metric-unit"> km</span></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">☔ Precipitação</div>
+        <div class="metric-value" id="d-rain">—<span class="metric-unit"> mm</span></div>
+      </div>
+      <div class="metric-card" style="grid-column: span 1;">
+        <div class="metric-label">🌡 Pressão</div>
+        <div class="metric-value" id="d-pres">—<span class="metric-unit"> hPa</span></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">💨 Qualidade do Ar (AQI)</div>
+        <div class="metric-value" id="d-aqi">—</div>
+        <div class="aqi-bar-wrap">
+          <div class="aqi-bar">
+            <div class="aqi-needle" id="aqi-needle" style="left: 10%"></div>
+          </div>
+          <div class="aqi-label" id="aqi-label">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PREVISÃO 7 DIAS -->
+    <div class="section-title">Previsão — 7 dias</div>
+    <div class="forecast-grid" id="forecast-grid"></div>
+
+    <!-- GRÁFICO HORAS -->
+    <div class="section-title">Temperatura por hora (hoje)</div>
+    <div class="chart-card">
+      <canvas id="hourly-chart"></canvas>
+    </div>
+
+    <!-- SOL + VENTO -->
+    <div class="bottom-row">
+      <div class="info-card">
+        <div class="section-title" style="margin-bottom: 0.8rem;">☀️ Sol hoje</div>
+        <div class="sun-row">
+          <div class="sun-item">
+            <div style="font-size:1.5rem">🌅</div>
+            <div class="sun-time" id="d-sunrise">—</div>
+            <div class="sun-label">Nascer</div>
+          </div>
+          <div class="sun-divider">→</div>
+          <div class="sun-item">
+            <div style="font-size:1.5rem">🌇</div>
+            <div class="sun-time" id="d-sunset">—</div>
+            <div class="sun-label">Pôr</div>
+          </div>
+        </div>
+        <div class="day-length" id="d-daylen">—</div>
+      </div>
+      <div class="info-card">
+        <div class="section-title" style="margin-bottom: 0.8rem;">🧭 Vento detalhado</div>
+        <div class="wind-compass">
+          <div class="compass">
+            <span class="compass-label compass-n">N</span>
+            <span class="compass-label compass-s">S</span>
+            <span class="compass-label compass-e">E</span>
+            <span class="compass-label compass-w">O</span>
+            <div class="compass-arrow" id="compass-arrow"></div>
+          </div>
+          <div class="wind-info">
+            <div class="wind-speed-big" id="d-wind2">— <span style="font-size:1rem;color:var(--muted)">km/h</span></div>
+            <div class="wind-dir-text" id="d-winddir">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+
+// ── CÓDIGO DE TEMPO → EMOJI + DESCRIÇÃO ──
+function weatherInfo(code, isDay=1) {
+  const map = {
+    0:  { e: isDay ? '☀️' : '🌙', d: 'Céu limpo' },
+    1:  { e: '🌤', d: 'Principalmente limpo' },
+    2:  { e: '⛅', d: 'Parcialmente nublado' },
+    3:  { e: '☁️', d: 'Nublado' },
+    45: { e: '🌫', d: 'Nevoeiro' },
+    48: { e: '🌫', d: 'Nevoeiro com geada' },
+    51: { e: '🌦', d: 'Garoa leve' },
+    53: { e: '🌦', d: 'Garoa moderada' },
+    55: { e: '🌧', d: 'Garoa intensa' },
+    61: { e: '🌧', d: 'Chuva leve' },
+    63: { e: '🌧', d: 'Chuva moderada' },
+    65: { e: '🌧', d: 'Chuva forte' },
+    71: { e: '🌨', d: 'Neve leve' },
+    73: { e: '❄️', d: 'Neve moderada' },
+    75: { e: '❄️', d: 'Neve intensa' },
+    80: { e: '🌦', d: 'Pancadas de chuva' },
+    81: { e: '🌧', d: 'Pancadas moderadas' },
+    82: { e: '⛈', d: 'Pancadas violentas' },
+    95: { e: '⛈', d: 'Tempestade' },
+    99: { e: '⛈', d: 'Tempestade com granizo' },
+  };
+  return map[code] || { e: '🌡', d: 'Condição desconhecida' };
+}
+
+// ── ÍNDICE DE CONFORTO ──
+function comfortIndex(temp, hum, wind) {
+  let score = 100;
+  // temperatura ideal: 18-25°C
+  if (temp < 10 || temp > 38) score -= 40;
+  else if (temp < 15 || temp > 32) score -= 20;
+  else if (temp < 18 || temp > 28) score -= 8;
+  // umidade ideal: 40-60%
+  if (hum > 85 || hum < 20) score -= 30;
+  else if (hum > 70 || hum < 30) score -= 15;
+  // vento
+  if (wind > 50) score -= 20;
+  else if (wind > 30) score -= 8;
+
+  if (score >= 80) return { cls: 'great', icon: '😊', msg: 'Ótimo para atividades ao ar livre' };
+  if (score >= 60) return { cls: 'good',  icon: '🙂', msg: 'Condições agradáveis hoje' };
+  if (score >= 40) return { cls: 'ok',    icon: '😐', msg: 'Conforto moderado — vista algo leve' };
+  return              { cls: 'poor',  icon: '😓', msg: 'Evite exposição prolongada ao sol' };
+}
+
+// ── DIREÇÃO DO VENTO ──
+function windDirection(deg) {
+  const dirs = ['Norte','Nordeste','Leste','Sudeste','Sul','Sudoeste','Oeste','Noroeste'];
+  return dirs[Math.round(deg / 45) % 8];
+}
+
+// ── AQI ──
+function aqiInfo(pm25) {
+  if (pm25 <= 12)  return { level: 'Boa',        pct: 5,  cls: 'great' };
+  if (pm25 <= 35)  return { level: 'Moderada',   pct: 25, cls: 'good' };
+  if (pm25 <= 55)  return { level: 'Ruim',        pct: 50, cls: 'ok' };
+  if (pm25 <= 150) return { level: 'Muito ruim',  pct: 75, cls: 'poor' };
+  return                   { level: 'Perigosa',   pct: 95, cls: 'poor' };
+}
+
+// ── FORMATA HORA ──
+function fmtHour(iso) {
+  return iso.split('T')[1].slice(0,5);
+}
+function fmtDayLen(sunrise, sunset) {
+  const sr = new Date(sunrise), ss = new Date(sunset);
+  const diff = (ss - sr) / 60000;
+  const h = Math.floor(diff / 60), m = diff % 60;
+  return `Duração do dia: ${h}h ${m}min`;
+}
+function weekday(dateStr, i) {
+  if (i === 0) return 'Hoje';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.','');
+}
+
+// ── CHART ──
+let hourlyChart = null;
+function drawHourlyChart(hours, temps) {
+  const ctx = $('hourly-chart').getContext('2d');
+  if (hourlyChart) hourlyChart.destroy();
+  hourlyChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: hours,
+      datasets: [{
+        data: temps,
+        borderColor: '#38BDF8',
+        backgroundColor: 'rgba(56,189,248,0.08)',
+        borderWidth: 2,
+        pointBackgroundColor: '#38BDF8',
+        pointRadius: 3,
+        tension: 0.4,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => ` ${ctx.raw}°C` }
+      }},
+      scales: {
+        x: { grid: { color: 'rgba(37,99,235,0.1)' }, ticks: { color: '#6B7A99', font: { family: 'JetBrains Mono', size: 11 }, maxTicksLimit: 12 } },
+        y: { grid: { color: 'rgba(37,99,235,0.1)' }, ticks: { color: '#6B7A99', font: { size: 11 }, callback: v => v + '°' } }
+      }
+    }
+  });
+}
+
+// ── RENDERIZA DASHBOARD ──
+function renderDashboard(geo, weather, air) {
+  const c = weather.current;
+  const d = weather.daily;
+  const h = weather.hourly;
+
+  // Hero
+  $('d-city').textContent = geo.name;
+  $('d-meta').textContent = `${geo.country} · ${geo.latitude.toFixed(2)}°, ${geo.longitude.toFixed(2)}°`;
+  $('d-temp').textContent = `${Math.round(c.temperature_2m)}°C`;
+  $('d-feel').textContent = `Sensação: ${Math.round(c.apparent_temperature)}°C`;
+  const wi = weatherInfo(c.weathercode, c.is_day);
+  $('d-desc').textContent = wi.d;
+  $('d-emoji').textContent = wi.e;
+
+  // Conforto
+  const cf = comfortIndex(c.temperature_2m, c.relativehumidity_2m, c.windspeed_10m);
+  const badge = $('d-comfort');
+  badge.className = `comfort-badge ${cf.cls}`;
+  badge.textContent = `${cf.icon} ${cf.msg}`;
+
+  // Métricas
+  $('d-hum').innerHTML  = `${c.relativehumidity_2m}<span class="metric-unit">%</span>`;
+  $('d-wind').innerHTML = `${Math.round(c.windspeed_10m)}<span class="metric-unit"> km/h</span>`;
+  $('d-vis').innerHTML  = `${Math.round((c.visibility || 10000) / 1000)}<span class="metric-unit"> km</span>`;
+  $('d-rain').innerHTML = `${(c.precipitation || 0).toFixed(1)}<span class="metric-unit"> mm</span>`;
+  $('d-pres').innerHTML = `${Math.round(c.pressure_msl || c.surface_pressure || 1013)}<span class="metric-unit"> hPa</span>`;
+
+  // AQI
+  const pm25 = air ? (air.hourly.pm2_5[0] || 10) : 10;
+  const aqi = aqiInfo(pm25);
+  $('d-aqi').textContent = `${pm25.toFixed(1)} µg/m³`;
+  $('aqi-needle').style.left = aqi.pct + '%';
+  $('aqi-label').textContent = `Qualidade: ${aqi.level}`;
+
+  // Previsão 7 dias
+  const fg = $('forecast-grid');
+  fg.innerHTML = '';
+  d.time.slice(0, 7).forEach((date, i) => {
+    const wi2 = weatherInfo(d.weathercode[i]);
+    const card = document.createElement('div');
+    card.className = 'forecast-card' + (i === 0 ? ' today' : '');
+    card.innerHTML = `
+      <div class="forecast-day">${weekday(date, i)}</div>
+      <div class="forecast-emoji">${wi2.e}</div>
+      <div class="forecast-max">${Math.round(d.temperature_2m_max[i])}°</div>
+      <div class="forecast-min">${Math.round(d.temperature_2m_min[i])}°</div>
+    `;
+    fg.appendChild(card);
+  });
+
+  // Gráfico horário
+  const now = new Date().getHours();
+  const slice = h.time.slice(now, now + 24);
+  const temps = h.temperature_2m.slice(now, now + 24);
+  const labels = slice.map(t => fmtHour(t));
+  drawHourlyChart(labels, temps.map(t => Math.round(t)));
+
+  // Sol
+  $('d-sunrise').textContent = fmtHour(d.sunrise[0]);
+  $('d-sunset').textContent  = fmtHour(d.sunset[0]);
+  $('d-daylen').textContent  = fmtDayLen(d.sunrise[0], d.sunset[0]);
+
+  // Bússola vento
+  $('compass-arrow').style.transform = `rotate(${c.winddirection_10m}deg)`;
+  $('d-wind2').innerHTML = `${Math.round(c.windspeed_10m)} <span style="font-size:1rem;color:var(--muted)">km/h</span>`;
+  $('d-winddir').textContent = `Vindo de: ${windDirection(c.winddirection_10m)}`;
+
+  // Mostra dashboard
+  $('placeholder').style.display = 'none';
+  $('state-msg').classList.remove('visible');
+  $('dashboard').classList.add('visible');
+}
+
+// ── BUSCA DADOS ──
+async function searchCity(cityName) {
+  if (!cityName) cityName = $('city-input').value.trim();
+  if (!cityName) return;
+
+  $('city-input').value = cityName;
+  $('dashboard').classList.remove('visible');
+  $('placeholder').style.display = 'none';
+  $('state-msg').classList.add('visible');
+  $('spinner').style.display = 'block';
+  $('state-text').textContent = 'Buscando localização...';
+
+  try {
+    // 1. Geocoding
+    const geoRes = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=pt&format=json`
+    );
+    const geoData = await geoRes.json();
+    if (!geoData.results?.length) throw new Error('Cidade não encontrada. Tente outro nome.');
+
+    const geo = geoData.results[0];
+    const { latitude: lat, longitude: lon } = geo;
+
+    $('state-text').textContent = 'Carregando clima...';
+
+    // 2. Clima (Open-Meteo, sem chave)
+    const wRes = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+      `&current=temperature_2m,apparent_temperature,relativehumidity_2m,weathercode,windspeed_10m,winddirection_10m,is_day,precipitation,visibility,pressure_msl,surface_pressure` +
+      `&hourly=temperature_2m` +
+      `&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset` +
+      `&timezone=auto&forecast_days=7`
+    );
+    const weather = await wRes.json();
+
+    // 3. Qualidade do ar (Open-Meteo Air Quality)
+    let air = null;
+    try {
+      const aRes = await fetch(
+        `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm2_5&timezone=auto&forecast_days=1`
+      );
+      air = await aRes.json();
+    } catch(_) {}
+
+    renderDashboard(geo, weather, air);
+
+  } catch(err) {
+    $('spinner').style.display = 'none';
+    $('state-text').textContent = '⚠️ ' + (err.message || 'Erro ao buscar dados. Tente novamente.');
+  }
+}
+
+// ── EVENTOS ──
+$('search-btn').addEventListener('click', () => searchCity($('city-input').value.trim()));
+$('city-input').addEventListener('keydown', e => { if (e.key === 'Enter') searchCity($('city-input').value.trim()); });
+</script>
+</body>
+</html>
