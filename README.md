@@ -101,7 +101,8 @@ function comfortIndex(temp, humidity, windSpeed) {
 ```
 climavision/
 │
-├── index.html       # Toda a aplicação (HTML + CSS + JS em arquivo único)
+├── index.html
+└── style.css   
 └── README.md
 ```
 
@@ -115,18 +116,3 @@ climavision/
 - [ ] Alertas meteorológicos
 - [ ] Comparação entre duas cidades lado a lado
 
----
-
-## 👤 Autor
-
-**Raphael**
-Estudante de Ciências da Computação | Residente Porto Digital
-
-[![GitHub](https://img.shields.io/badge/GitHub-seu--usuario-181717?style=flat&logo=github)](https://github.com/seu-usuario)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Raphael-0A66C2?style=flat&logo=linkedin)](https://linkedin.com/in/seu-usuario)
-
----
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
